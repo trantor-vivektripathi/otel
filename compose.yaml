@@ -15,7 +15,25 @@ services:
   grafana-lgtm:
     image: 'grafana/otel-lgtm:latest'
     container_name: grafana-lgtm
+    environment:
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /otel-lgtm/grafana/conf/provisioning/dashboards/custom/logs-dashboard.json
     ports:
       - '3000:3000'
       - '4317:4317'
       - '4318:4318'
+    volumes:
+      - ./dashboards/logs-dashboard.json:/otel-lgtm/grafana/conf/provisioning/dashboards/custom/logs-dashboard.json:ro
+      - ./dashboards/dashboards-provisioning.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/custom.yaml:ro
+
+  loadgen:
+    image: grafana/k6:latest
+    container_name: otel-loadgen
+    profiles:
+      - loadgen
+    environment:
+      BASE_URL: http://app:8080
+    volumes:
+      - ./scripts/traffic.js:/scripts/traffic.js:ro
+    command: run /scripts/traffic.js
+    depends_on:
+      - app
