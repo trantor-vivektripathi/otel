@@ -22,8 +22,12 @@ $jobs = @()
                 $url = "$BaseUrl/greet/$name"
             } elseif ($roll -lt 82) {
                 $url = "$BaseUrl/slow"
-            } elseif ($roll -lt 95) {
+            } elseif ($roll -lt 92) {
                 $url = "$BaseUrl/unstable?failPercent=40"
+            } elseif ($roll -lt 98) {
+                $tenants = @("acme", "globex", "initech", "umbrella", "wayne")
+                $tenant = $tenants[$rnd.Next($tenants.Length)]
+                $url = "$BaseUrl/checkout/$tenant?failRate=0.25&items=4"
             } else {
                 $url = "$BaseUrl/chatter/20"
             }

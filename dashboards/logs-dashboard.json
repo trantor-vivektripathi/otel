@@ -1,436 +1,903 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "datasource",
-          "uid": "grafana"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "description": "Logs-focused dashboard for OTEL demo app",
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "links": [],
-  "liveNow": false,
-  "panels": [
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_ds}"
-      },
-      "description": "Total ingested app log lines per second",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 14,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_ds}"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate({service_name=~\"$service\"}[1m]))",
-          "legendFormat": "all logs/sec",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Log Throughput",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_ds}"
-      },
-      "description": "Error-like lines containing ERROR",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 14,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_ds}"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate({service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\" [1m])) or vector(0)",
-          "legendFormat": "error logs/sec",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Error Throughput",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_ds}"
-      },
-      "description": "Errors as % of all logs over last 5m",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 2,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 2
-              },
-              {
-                "color": "red",
-                "value": 8
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_ds}"
-          },
-          "editorMode": "code",
-          "expr": "(100 * (sum(rate({service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\" [5m])) / sum(rate({service_name=~\"$service\"}[5m])))) or vector(0)",
-          "legendFormat": "error %",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Error Ratio (5m)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_ds}"
-      },
-      "description": "Live application logs",
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 4,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_ds}"
-          },
-          "editorMode": "code",
-          "expr": "{service_name=~\"$service\"}",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Application Logs",
-      "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_ds}"
-      },
-      "description": "Focused view for synthetic failures and error lines",
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 18
-      },
-      "id": 5,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_ds}"
-          },
-          "editorMode": "code",
-          "expr": "{service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\"",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Error Log Stream",
-      "type": "logs"
-    }
-  ],
-  "refresh": "10s",
-  "schemaVersion": 39,
-  "tags": [
-    "otel",
-    "loki",
-    "logs",
-    "demo"
-  ],
-  "templating": {
-    "list": [
-      {
-        "current": {
-          "selected": false,
-          "text": "Loki",
-          "value": "loki"
-        },
-        "hide": 0,
-        "includeAll": false,
-        "label": "Loki DS",
-        "multi": false,
-        "name": "loki_ds",
-        "options": [],
-        "query": "loki",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "type": "datasource"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "loki",
-          "uid": "${loki_ds}"
-        },
-        "definition": "label_values({}, service_name)",
-        "hide": 0,
-        "includeAll": true,
-        "allValue": ".+",
-        "label": "Service",
-        "multi": false,
-        "name": "service",
-        "options": [],
-        "query": {
-          "query": "label_values({}, service_name)",
-          "refId": "LokiVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      }
-    ]
-  },
-  "time": {
-    "from": "now-15m",
-    "to": "now"
-  },
-  "timezone": "",
-  "title": "OTEL Logs Dashboard",
-  "uid": "custom-otel-logs",
-  "version": 1
+    "annotations":  {
+                        "list":  [
+                                     {
+                                         "builtIn":  1,
+                                         "datasource":  {
+                                                            "type":  "datasource",
+                                                            "uid":  "grafana"
+                                                        },
+                                         "enable":  true,
+                                         "hide":  true,
+                                         "iconColor":  "rgba(0, 211, 255, 1)",
+                                         "name":  "Annotations \u0026 Alerts",
+                                         "type":  "dashboard"
+                                     }
+                                 ]
+                    },
+    "description":  "Enterprise-style OTEL logs dashboard with reliability and business insights",
+    "editable":  true,
+    "fiscalYearStartMonth":  0,
+    "graphTooltip":  0,
+    "links":  [
+
+              ],
+    "liveNow":  false,
+    "panels":  [
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Total ingested app log lines per second",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "palette-classic"
+                                                                      },
+                                                            "custom":  {
+                                                                           "axisBorderShow":  false,
+                                                                           "axisCenteredZero":  false,
+                                                                           "axisColorMode":  "text",
+                                                                           "axisLabel":  "",
+                                                                           "axisPlacement":  "auto",
+                                                                           "barAlignment":  0,
+                                                                           "drawStyle":  "line",
+                                                                           "fillOpacity":  14,
+                                                                           "gradientMode":  "none",
+                                                                           "hideFrom":  {
+                                                                                            "legend":  false,
+                                                                                            "tooltip":  false,
+                                                                                            "viz":  false
+                                                                                        },
+                                                                           "insertNulls":  false,
+                                                                           "lineInterpolation":  "linear",
+                                                                           "lineWidth":  2,
+                                                                           "pointSize":  5,
+                                                                           "scaleDistribution":  {
+                                                                                                     "type":  "linear"
+                                                                                                 },
+                                                                           "showPoints":  "never",
+                                                                           "spanNulls":  false,
+                                                                           "stacking":  {
+                                                                                            "group":  "A",
+                                                                                            "mode":  "none"
+                                                                                        },
+                                                                           "thresholdsStyle":  {
+                                                                                                   "mode":  "off"
+                                                                                               }
+                                                                       },
+                                                            "mappings":  [
+
+                                                                         ],
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             }
+                                                                                         ]
+                                                                           },
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  0,
+                                       "y":  0
+                                   },
+                       "id":  1,
+                       "options":  {
+                                       "legend":  {
+                                                      "calcs":  [
+
+                                                                ],
+                                                      "displayMode":  "list",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "single",
+                                                       "sort":  "none"
+                                                   }
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(rate({service_name=~\"$service\"}[1m]))",
+                                           "legendFormat":  "all logs/sec",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Log Throughput",
+                       "type":  "timeseries"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Error-like lines containing ERROR",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "palette-classic"
+                                                                      },
+                                                            "custom":  {
+                                                                           "axisBorderShow":  false,
+                                                                           "axisCenteredZero":  false,
+                                                                           "axisColorMode":  "text",
+                                                                           "axisLabel":  "",
+                                                                           "axisPlacement":  "auto",
+                                                                           "barAlignment":  0,
+                                                                           "drawStyle":  "line",
+                                                                           "fillOpacity":  14,
+                                                                           "gradientMode":  "none",
+                                                                           "hideFrom":  {
+                                                                                            "legend":  false,
+                                                                                            "tooltip":  false,
+                                                                                            "viz":  false
+                                                                                        },
+                                                                           "insertNulls":  false,
+                                                                           "lineInterpolation":  "linear",
+                                                                           "lineWidth":  2,
+                                                                           "pointSize":  5,
+                                                                           "scaleDistribution":  {
+                                                                                                     "type":  "linear"
+                                                                                                 },
+                                                                           "showPoints":  "never",
+                                                                           "spanNulls":  false,
+                                                                           "stacking":  {
+                                                                                            "group":  "A",
+                                                                                            "mode":  "none"
+                                                                                        },
+                                                                           "thresholdsStyle":  {
+                                                                                                   "mode":  "off"
+                                                                                               }
+                                                                       },
+                                                            "mappings":  [
+
+                                                                         ],
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  1
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  5
+                                                                                             }
+                                                                                         ]
+                                                                           },
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  8,
+                                       "y":  0
+                                   },
+                       "id":  2,
+                       "options":  {
+                                       "legend":  {
+                                                      "calcs":  [
+
+                                                                ],
+                                                      "displayMode":  "list",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "single",
+                                                       "sort":  "none"
+                                                   }
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(rate({service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\" [1m])) or vector(0)",
+                                           "legendFormat":  "error logs/sec",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Error Throughput",
+                       "type":  "timeseries"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Errors as % of all logs over last 5m",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "thresholds"
+                                                                      },
+                                                            "decimals":  2,
+                                                            "mappings":  [
+
+                                                                         ],
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  2
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  8
+                                                                                             }
+                                                                                         ]
+                                                                           },
+                                                            "unit":  "percent"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  8,
+                                       "x":  16,
+                                       "y":  0
+                                   },
+                       "id":  3,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "(100 * (sum(rate({service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\" [5m])) / sum(rate({service_name=~\"$service\"}[5m])))) or vector(0)",
+                                           "legendFormat":  "error %",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Error Ratio (5m)",
+                       "type":  "stat"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Live application logs",
+                       "gridPos":  {
+                                       "h":  10,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  8
+                                   },
+                       "id":  4,
+                       "options":  {
+                                       "dedupStrategy":  "none",
+                                       "enableLogDetails":  true,
+                                       "prettifyLogMessage":  false,
+                                       "showCommonLabels":  false,
+                                       "showLabels":  true,
+                                       "showTime":  true,
+                                       "sortOrder":  "Descending",
+                                       "wrapLogMessage":  true
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "{service_name=~\"$service\"}",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Application Logs",
+                       "type":  "logs"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Focused view for synthetic failures and error lines",
+                       "gridPos":  {
+                                       "h":  10,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  18
+                                   },
+                       "id":  5,
+                       "options":  {
+                                       "dedupStrategy":  "none",
+                                       "enableLogDetails":  true,
+                                       "prettifyLogMessage":  false,
+                                       "showCommonLabels":  false,
+                                       "showLabels":  true,
+                                       "showTime":  true,
+                                       "sortOrder":  "Descending",
+                                       "wrapLogMessage":  true
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "{service_name=~\"$service\"} |~ \"(?i)(error|exception|failed|synthetic demo failure)\"",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Error Log Stream",
+                       "type":  "logs"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Successful checkouts as percentage of all checkout events",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percent",
+                                                            "decimals":  2,
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  70
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  90
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  6,
+                                       "w":  6,
+                                       "x":  0,
+                                       "y":  28
+                                   },
+                       "id":  6,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "(100 * (sum(rate({service_name=~\"$service\"} |= \"event=checkout\" |= \"status=SUCCESS\" | logfmt | tenant=~\"$tenant\" [5m])) / sum(rate({service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\" [5m])))) or vector(0)",
+                                           "legendFormat":  "success %",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Success Ratio (5m)",
+                       "type":  "stat"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Estimated checkout revenue per minute from SUCCESS events",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "currencyUSD",
+                                                            "decimals":  2,
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  100
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  300
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  6,
+                                       "w":  6,
+                                       "x":  6,
+                                       "y":  28
+                                   },
+                       "id":  7,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "(sum(rate({service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\" | status=\"SUCCESS\" | unwrap amount | __error__=\"\" [1m])) * 60) or vector(0)",
+                                           "legendFormat":  "revenue/min",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Revenue / min",
+                       "type":  "stat"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "95th percentile checkout latency across tenants",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "ms",
+                                                            "decimals":  0,
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  700
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  1200
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  6,
+                                       "w":  6,
+                                       "x":  12,
+                                       "y":  28
+                                   },
+                       "id":  8,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "max(quantile_over_time(0.95, {service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\" | unwrap latency_ms | __error__=\"\" [5m])) or vector(0)",
+                                           "legendFormat":  "p95 latency",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout P95 Latency (5m)",
+                       "type":  "stat"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Total checkout attempts in the last 5 minutes",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short",
+                                                            "decimals":  0,
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "orange",
+                                                                                                 "value":  20
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  80
+                                                                                             }
+                                                                                         ]
+                                                                           }
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  6,
+                                       "w":  6,
+                                       "x":  18,
+                                       "y":  28
+                                   },
+                       "id":  9,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "area",
+                                       "justifyMode":  "auto",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "auto"
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum(count_over_time({service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\" [5m])) or vector(0)",
+                                           "legendFormat":  "checkout attempts",
+                                           "queryType":  "instant",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Volume (5m)",
+                       "type":  "stat"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Traffic mix by tenant (requests/sec)",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  12,
+                                       "x":  0,
+                                       "y":  34
+                                   },
+                       "id":  10,
+                       "options":  {
+                                       "legend":  {
+                                                      "calcs":  [
+
+                                                                ],
+                                                      "displayMode":  "table",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "multi",
+                                                       "sort":  "desc"
+                                                   }
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum by (tenant) (rate({service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\" [5m]))",
+                                           "legendFormat":  "{{tenant}}",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Throughput By Tenant",
+                       "type":  "timeseries"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Checkout failures by region",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  12,
+                                       "x":  12,
+                                       "y":  34
+                                   },
+                       "id":  11,
+                       "options":  {
+                                       "legend":  {
+                                                      "calcs":  [
+
+                                                                ],
+                                                      "displayMode":  "table",
+                                                      "placement":  "bottom",
+                                                      "showLegend":  true
+                                                  },
+                                       "tooltip":  {
+                                                       "mode":  "multi",
+                                                       "sort":  "desc"
+                                                   }
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "sum by (region) (rate({service_name=~\"$service\"} |= \"event=checkout\" |= \"status=FAILED\" | logfmt | tenant=~\"$tenant\" [5m])) or vector(0)",
+                                           "legendFormat":  "{{region}}",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Failures By Region",
+                       "type":  "timeseries"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "loki",
+                                          "uid":  "${loki_ds}"
+                                      },
+                       "description":  "Focused business stream for checkout events",
+                       "gridPos":  {
+                                       "h":  10,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  42
+                                   },
+                       "id":  12,
+                       "options":  {
+                                       "dedupStrategy":  "none",
+                                       "enableLogDetails":  true,
+                                       "prettifyLogMessage":  false,
+                                       "showCommonLabels":  false,
+                                       "showLabels":  true,
+                                       "showTime":  true,
+                                       "sortOrder":  "Descending",
+                                       "wrapLogMessage":  true
+                                   },
+                       "pluginVersion":  "11.0.0",
+                       "targets":  [
+                                       {
+                                           "datasource":  {
+                                                              "type":  "loki",
+                                                              "uid":  "${loki_ds}"
+                                                          },
+                                           "editorMode":  "code",
+                                           "expr":  "{service_name=~\"$service\"} |= \"event=checkout\" | logfmt | tenant=~\"$tenant\"",
+                                           "queryType":  "range",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Checkout Event Stream",
+                       "type":  "logs"
+                   }
+               ],
+    "refresh":  "10s",
+    "schemaVersion":  39,
+    "tags":  [
+                 "otel",
+                 "loki",
+                 "logs",
+                 "demo",
+                 "enterprise",
+                 "business"
+             ],
+    "templating":  {
+                       "list":  [
+                                    {
+                                        "current":  {
+                                                        "selected":  false,
+                                                        "text":  "Loki",
+                                                        "value":  "loki"
+                                                    },
+                                        "hide":  0,
+                                        "includeAll":  false,
+                                        "label":  "Loki DS",
+                                        "multi":  false,
+                                        "name":  "loki_ds",
+                                        "options":  [
+
+                                                    ],
+                                        "query":  "loki",
+                                        "refresh":  1,
+                                        "regex":  "",
+                                        "skipUrlSync":  false,
+                                        "type":  "datasource"
+                                    },
+                                    {
+                                        "current":  {
+                                                        "selected":  true,
+                                                        "text":  "All",
+                                                        "value":  "$__all"
+                                                    },
+                                        "datasource":  {
+                                                           "type":  "loki",
+                                                           "uid":  "${loki_ds}"
+                                                       },
+                                        "definition":  "label_values({}, service_name)",
+                                        "hide":  0,
+                                        "includeAll":  true,
+                                        "allValue":  ".+",
+                                        "label":  "Service",
+                                        "multi":  false,
+                                        "name":  "service",
+                                        "options":  [
+
+                                                    ],
+                                        "query":  {
+                                                      "query":  "label_values({}, service_name)",
+                                                      "refId":  "LokiVariableQueryEditor-VariableQuery"
+                                                  },
+                                        "refresh":  2,
+                                        "regex":  "",
+                                        "skipUrlSync":  false,
+                                        "sort":  1,
+                                        "type":  "query"
+                                    },
+                                    {
+                                        "current":  {
+                                                        "selected":  true,
+                                                        "text":  "All",
+                                                        "value":  "$__all"
+                                                    },
+                                        "hide":  0,
+                                        "includeAll":  true,
+                                        "allValue":  ".+",
+                                        "label":  "Tenant",
+                                        "multi":  false,
+                                        "name":  "tenant",
+                                        "options":  [
+
+                                                    ],
+                                        "query":  "acme,globex,initech,umbrella,wayne",
+                                        "queryValue":  "",
+                                        "skipUrlSync":  false,
+                                        "type":  "custom"
+                                    }
+                                ]
+                   },
+    "time":  {
+                 "from":  "now-3h",
+                 "to":  "now"
+             },
+    "timezone":  "",
+    "title":  "OTEL Logs Dashboard",
+    "uid":  "custom-otel-logs",
+    "version":  2
 }

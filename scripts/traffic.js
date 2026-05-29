@@ -3,6 +3,7 @@ import { check, sleep } from "k6";
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:8080";
 const NAMES = ["alex", "sam", "john", "maria", "lee", "olivia", "nora", "vik"];
+const TENANTS = ["acme", "globex", "initech", "umbrella", "wayne"];
 
 export const options = {
   scenarios: {
@@ -27,6 +28,10 @@ function randomName() {
   return NAMES[Math.floor(Math.random() * NAMES.length)];
 }
 
+function randomTenant() {
+  return TENANTS[Math.floor(Math.random() * TENANTS.length)];
+}
+
 export default function () {
   const selector = Math.random();
   let response;
@@ -37,15 +42,17 @@ export default function () {
     response = http.get(`${BASE_URL}/greet/${randomName()}`);
   } else if (selector < 0.82) {
     response = http.get(`${BASE_URL}/slow`);
-  } else if (selector < 0.95) {
+  } else if (selector < 0.92) {
     response = http.get(`${BASE_URL}/unstable?failPercent=40`);
+  } else if (selector < 0.98) {
+    response = http.get(`${BASE_URL}/checkout/${randomTenant()}?failRate=0.25&items=4`);
   } else {
     response = http.get(`${BASE_URL}/chatter/30`);
   }
 
   check(response, {
     "response under 2s": (r) => r.timings.duration < 2000,
-    "status is expected": (r) => [200, 500].includes(r.status),
+    "status is expected": (r) => [200, 402, 500].includes(r.status),
   });
 
   sleep(Math.random() * 0.3);
