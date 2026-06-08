@@ -20,6 +20,7 @@ The project contains three main runtime services:
 - `app`: Spring Boot service running on `http://localhost:8080`
 - `grafana-lgtm`: Grafana all-in-one observability stack with Loki, Grafana, Tempo, Prometheus, and OpenTelemetry Collector
 - `loadgen`: optional k6 traffic generator enabled through the Compose `loadgen` profile
+- `mailpit`: local SMTP inbox for demo email alerts
 
 The app exports OpenTelemetry data over OTLP HTTP:
 
@@ -31,6 +32,12 @@ Grafana is available at:
 
 ```text
 http://localhost:3000
+```
+
+Mailpit email inbox is available at:
+
+```text
+http://localhost:8025
 ```
 
 Default credentials:
@@ -55,6 +62,7 @@ Grafana LGTM :4318
         +-- Tempo for traces
         +-- Prometheus for metrics
         +-- Grafana dashboard on :3000
+        +-- Email alert via SMTP to Mailpit :8025
 ```
 
 The dashboard is provisioned automatically from:
@@ -112,6 +120,12 @@ OTEL Logs Dashboard
 ```
 
 If you change the dashboard JSON, recreate Grafana so provisioning reloads:
+
+```bash
+docker compose -f /mnt/d/demo/otel/compose.yaml up -d --force-recreate grafana-lgtm
+```
+
+If you change alert provisioning, recreate Grafana too:
 
 ```bash
 docker compose -f /mnt/d/demo/otel/compose.yaml up -d --force-recreate grafana-lgtm
@@ -380,17 +394,83 @@ How to explain it:
 
 This is the detail view for the business panels. It shows the actual tenant, region, status, amount, item count, latency, payment method, and error code behind the summary numbers.
 
+## Email Alerting
+
+The demo provisions a Grafana-managed alert named:
+
+```text
+OTelDemoHighErrorRatio
+```
+
+Alert objective:
+
+Send an email when the application `Error Ratio (5m)` is greater than `10%` for at least `30 seconds`.
+
+The alert uses the same error ratio idea as the dashboard:
+
+```logql
+(100 * (sum(rate({service_name="otel"} |~ "(?i)(error|exception|failed|synthetic demo failure)" [5m])) / sum(rate({service_name="otel"}[5m])))) or vector(0)
+```
+
+Alert logic:
+
+- Query Loki for total log rate over five minutes
+- Query Loki for error-like log rate over five minutes
+- Convert error rate into a percentage
+- Reduce the result to the latest value
+- Fire when the latest value is greater than `10`
+- Route the alert to the `otel-demo-email` contact point
+- Send email through Grafana SMTP to Mailpit
+
+Provisioning file:
+
+```text
+alerting/error-ratio-email-alert.yaml
+```
+
+SMTP settings are defined in `compose.yaml`:
+
+```yaml
+GF_SMTP_ENABLED: true
+GF_SMTP_HOST: mailpit:1025
+GF_SMTP_FROM_ADDRESS: otel-demo-alerts@example.local
+GF_SMTP_FROM_NAME: OTEL Demo Grafana
+ALERT_EMAIL_TO: demo-alerts@example.local
+```
+
+Trigger the alert:
+
+```bash
+for i in {1..300}; do curl -s "http://localhost:8080/unstable?failPercent=90" >/dev/null; done
+```
+
+Then open the Mailpit inbox:
+
+```text
+http://localhost:8025
+```
+
+Expected behavior:
+
+- Grafana evaluates the rule every `30s`
+- Alert moves from `Normal` to `Pending`
+- After `30s` above threshold, alert becomes `Firing`
+- Mailpit receives an email from `OTEL Demo Grafana`
+- Grafana repeats the email every `30s` while the alert remains firing
+- When error traffic stops and the ratio falls below `10%`, Grafana sends a resolved notification
+
 ## Suggested Demo Story
 
 1. Start with the dashboard quiet and explain that the app is exporting OpenTelemetry signals to Grafana LGTM.
 2. Start the k6 load generator and show `Log Throughput` rising.
 3. Trigger `/slow` and explain latency as a user-impact signal.
 4. Trigger `/unstable?failPercent=80` and show `Error Throughput`, `Error Ratio`, and `Error Log Stream`.
-5. Trigger checkout traffic and move to business panels.
-6. Use the `Tenant` filter to isolate one customer and show tenant-specific checkout health.
-7. Use `Checkout Failures By Region` to show how logs can become operational insight.
-8. Open raw logs and point out trace IDs, span IDs, severity, and structured checkout fields.
-9. Move to Grafana Explore for Loki or Tempo if you want to show investigation from logs to traces.
+5. Open Mailpit and show that Grafana sent an email when Error Ratio crossed `10%`.
+6. Trigger checkout traffic and move to business panels.
+7. Use the `Tenant` filter to isolate one customer and show tenant-specific checkout health.
+8. Use `Checkout Failures By Region` to show how logs can become operational insight.
+9. Open raw logs and point out trace IDs, span IDs, severity, and structured checkout fields.
+10. Move to Grafana Explore for Loki or Tempo if you want to show investigation from logs to traces.
 
 ## Useful Explore Queries
 
@@ -450,6 +530,12 @@ Check LGTM logs:
 docker compose -f /mnt/d/demo/otel/compose.yaml logs --tail=200 grafana-lgtm
 ```
 
+Check Mailpit logs:
+
+```bash
+docker compose -f /mnt/d/demo/otel/compose.yaml logs --tail=100 mailpit
+```
+
 If Grafana panels show no data:
 
 - Set time range to `Last 1 hour` or `Last 3 hours`
@@ -468,6 +554,14 @@ If application changes do not appear:
 ```bash
 docker compose -f /mnt/d/demo/otel/compose.yaml up -d --build app
 ```
+
+If no email arrives:
+
+- Open Grafana `Alerting > Alert rules` and confirm `OTelDemoHighErrorRatio` exists
+- Confirm the rule is `Firing`
+- Open `Alerting > Contact points` and confirm `otel-demo-email` exists
+- Check Mailpit at `http://localhost:8025`
+- Check Grafana logs for SMTP or alert provisioning errors
 
 Stop everything:
 

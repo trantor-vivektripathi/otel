@@ -17,6 +17,11 @@ services:
     container_name: grafana-lgtm
     environment:
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /otel-lgtm/grafana/conf/provisioning/dashboards/custom/logs-dashboard.json
+      GF_SMTP_ENABLED: true
+      GF_SMTP_HOST: mailpit:1025
+      GF_SMTP_FROM_ADDRESS: otel-demo-alerts@example.local
+      GF_SMTP_FROM_NAME: OTEL Demo Grafana
+      ALERT_EMAIL_TO: demo-alerts@example.local
     ports:
       - '3000:3000'
       - '4317:4317'
@@ -24,6 +29,16 @@ services:
     volumes:
       - ./dashboards/logs-dashboard.json:/otel-lgtm/grafana/conf/provisioning/dashboards/custom/logs-dashboard.json:ro
       - ./dashboards/dashboards-provisioning.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/custom.yaml:ro
+      - ./alerting/error-ratio-email-alert.yaml:/otel-lgtm/grafana/conf/provisioning/alerting/error-ratio-email-alert.yaml:ro
+    depends_on:
+      - mailpit
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: otel-mailpit
+    ports:
+      - '8025:8025'
+      - '1025:1025'
 
   loadgen:
     image: grafana/k6:latest

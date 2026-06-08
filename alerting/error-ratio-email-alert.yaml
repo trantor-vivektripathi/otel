@@ -1,0 +1,120 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: otel-demo-email
+    receivers:
+      - uid: otel-demo-email-receiver
+        type: email
+        disableResolveMessage: false
+        settings:
+          addresses: $ALERT_EMAIL_TO
+          singleEmail: false
+          subject: "[OTEL Demo] Error Ratio is above 10%"
+          message: |
+            The OTEL demo application's Error Ratio has been above 10%.
+
+            Open Grafana:
+            http://localhost:3000/d/custom-otel-logs/otel-logs-dashboard
+
+            Suggested investigation:
+            1. Check the Error Ratio and Error Throughput panels.
+            2. Open Error Log Stream.
+            3. Filter checkout failures by tenant or region.
+
+policies:
+  - orgId: 1
+    receiver: otel-demo-email
+    group_by:
+      - alertname
+    group_wait: 10s
+    group_interval: 1m
+    repeat_interval: 30s
+    routes:
+      - receiver: otel-demo-email
+        object_matchers:
+          - ["alertname", "=", "OTelDemoHighErrorRatio"]
+
+groups:
+  - orgId: 1
+    name: otel-demo-alerts
+    folder: OTEL Demo Alerts
+    interval: 30s
+    rules:
+      - uid: otel-demo-high-error-ratio
+        title: OTelDemoHighErrorRatio
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: loki
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              editorMode: code
+              expr: '(100 * (sum(rate({service_name="otel"} |~ "(?i)(error|exception|failed|synthetic demo failure)" [5m])) / sum(rate({service_name="otel"}[5m])))) or vector(0)'
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings:
+                mode: replaceNN
+                replaceWithValue: 0
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 10
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: custom-otel-logs
+        panelId: 3
+        noDataState: OK
+        execErrState: Error
+        for: 30s
+        annotations:
+          summary: "OTEL demo Error Ratio is above 10%"
+          description: "Error Ratio has exceeded 10% for at least 30 seconds. Check the Error Log Stream and checkout failure panels."
+          runbook_url: "http://localhost:3000/d/custom-otel-logs/otel-logs-dashboard"
+        labels:
+          severity: critical
+          service: otel
